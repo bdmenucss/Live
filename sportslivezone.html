@@ -1,0 +1,605 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirome Player</title>
+    <!-- Monetag SDK -->
+    <script src='//libtl.com/sdk.js' data-zone='9854118' data-sdk='show_9854118'></script>
+    <!-- Video.js + HLS.js -->
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- Video.js Quality Selector Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/videojs-hls-quality-selector@latest/dist/videojs-hls-quality-selector.min.js"></script>
+    <!-- Video.js CSS -->
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+    
+    /* Disable text selection and image drag */
+    * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+    }
+    
+      body {
+        margin-top: 1%;
+        margin-left: 1%;
+        margin-right: 2%;
+        background: #000;
+        display: block;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        overflow: fixed;
+        /* কোন স্ক্রল হবে না */
+        /* User cannot select the text */
+        user-select: none;
+        -webkit-user-select: none;
+        /* Chrome, Safari */
+        -moz-user-select: none;
+        /* Firefox */
+        -ms-user-select: none;
+        /* IE/Edge */
+      }
+
+      * {
+        -ms-overflow-style: none;
+        scrollbar-width: none
+      }
+
+      /* ভিডিও প্লেয়ার */
+      .video-container {
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        background: #000;
+        overflow: hidden;
+        border-radius: 4px;
+        border: 2px solid #4a4747;
+        aspect-ratio: 16/9;
+      }
+
+      video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+      }
+
+      /* লোগো (player overlay) */
+      .player-logo {
+        position: absolute;
+        top: 10%;
+        left: 15px;
+        width: 60px;
+        z-index: 9999;
+        pointer-events: none;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .vjs-fullscreen .player-logo {
+        width: 90px;
+      }
+
+      /* পোস্টার কভার */
+      .custom-poster {
+        position: absolute;
+        inset: 0;
+        background: url("https://i.postimg.cc/C14vzLWy/IMG-20250909-WA0107.jpg") center/cover no-repeat;
+        z-index: 5;
+        cursor: pointer;
+        transition: opacity 0.6s ease;
+      }
+
+      .custom-poster.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* সার্ভার বাটন */
+      .channel-buttons {
+        margin: 15px 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .channel-buttons button {
+        background: linear-gradient(145deg, #ff4d4d, #cc0000);
+        color: #fff;
+        border: none;
+        width: 100px;
+        height: 30px;
+        font-size: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 5px white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .channel-buttons button:active {
+        transform: translateY(7px);
+        box-shadow: 0 2px #330000;
+      }
+
+      /* Ads box styling */
+      .ads-box {
+        margin: 10px auto;
+        max-width: 728px;
+        min-height: 90px;
+        background: #111;
+        color: #aaa;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #333;
+      }
+
+      #online-counter,
+      #ads-counter {
+        margin: 10px 0;
+        font-size: 14px;
+        color: white;
+        background: #111;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+    </style>
+    
+<style>
+  /* Telegram Bot Buttons */
+  .telegram-bots {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .telegram-bots a {
+    text-decoration: none;
+    background: linear-gradient(145deg, #0088cc, #005f88);
+    /* Telegram color */
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 4px #003f5c;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .telegram-bots a:hover {
+    background: linear-gradient(145deg, #00aaff, #0088cc);
+  }
+
+  .telegram-bots a:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px #002a40;
+  }
+  
+</style>
+
+  </head>
+  <body>
+    <!-- ভিডিও কন্টেইনার -->
+    <div class="video-container" id="video-container">
+      <video id="my-player" class="video-js vjs-default-skin" controls preload="auto" playsinline></video>
+      <!-- লোগো  https://i.postimg.cc/d1hHy4ss/11.png -->
+      <!--    <img src="" class="player-logo" alt="Logo"> -->
+      <!-- কাস্টম পোস্টার -->
+      <div class="custom-poster" id="poster"></div>
+    </div>
+    <!-- Compact Link Input + Play/Clear Button with gap -->
+    <div style="margin: 15px 0; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; align-items: center;">
+      <input type="text" id="userVideoLink" placeholder="Paste video link" style="width: 70%; padding: 5px; border-radius: 5px 0 0 5px; border: 1px solid #888; outline: none;">
+      <div style="display: flex; gap: 3px;">
+        <!-- এখানে gap দেওয়া হয়েছে -->
+        <button id="playLinkBtn" style="padding: 6px 10px; border: none; background: #28a745; color: #fff; cursor: pointer; border-radius: 0;"> Play </button>
+        <button id="clearLinkBtn" style="padding: 6px 10px; border: none; background: #ff4d4d; color: #fff; cursor: pointer; border-radius: 0 5px 5px 0;"> Clear </button>
+      </div>
+    </div>
+    <!-- সার্ভার বাটন -->
+    <div class="channel-buttons">
+        
+      <button onclick="switchChannel('https://live-en.aisports.cc/moviebox/device01/playlist.m3u8')">ICC WORLD CUP</button>        
+        
+ 
+      <button onclick="switchChannel('http://live.matribhumitv.com/matribhumi-sports/index.m3u8')">Asia Cup</button>
+       
+  
+        
+        
+        
+        
+      <button onclick="switchChannel('https://dmidspta.cdn.mgmlcdn.com/dubaisports/smil:dubaisports.stream.smil/chunklist.m3u8')">Dubai Sports 1</button>        
+      <button onclick="switchChannel('https://dmitwlvvll.cdn.mgmlcdn.com/dubaisportshd/smil:dubaisportshd.smil/chunklist.m3u8')">Dubai Sports 2</button>
+     
+      <button onclick="switchChannel('https://live.dinesh29.com.np/stream/jiotvplus/starsportsselecthd1/master.m3u8')">Star SL 1</button>
+      <button onclick="switchChannel('https://live.dinesh29.com.np/stream/jiotvplus/starsportsselecthd2/master.m3u8')">Star SL 2</button>
+      <button onclick="switchChannel('https://starsportshindiii.pages.dev/480p.m3u8')">Star Sports 1</button>
+      
+      <button onclick="switchChannel('https://smart.bengaldigital.live/WWE/tracks-v1a1/mono.m3u8')">WWE</button>
+      
+      <button onclick="switchChannel('https://chained.ncvtmisgov.com/deport.m3u8')">ESPN Vivo</button>      
+      
+      <button onclick="switchChannel('https://svs.itworkscdn.net/smc4sportslive/smc4.smil/playlist.m3u8')">Sharjah Sports</button>
+      <button onclick="switchChannel('https://d35j504z0x2vu2.cloudfront.net/v1/master/0bc8e8376bd8417a1b6761138aa41c26c7309312/pll-network-ww/pll.m3u8')">Server 5</button>
+      <button onclick="switchChannel('https://bein-esp-xumo.amagi.tv/playlistR1080p.m3u8')">beIN Xtra</button>
+      <button onclick="switchChannel('https://d35j504z0x2vu2.cloudfront.net/v1/master/0bc8e8376bd8417a1b6761138aa41c26c7309312/bein-sports-xtra-en-espanol/playlist.m3u8')">beIN Xtra</button>
+      <button onclick="switchChannel('https://d3s7x6kmqcnb6b.cloudfront.net/d/distro001a/NKXQTWMREOB2XFJRLAHO/hls3/now,-1m/m.m3u8')">SportsTVPlus</button>
+      
+      <button onclick="switchChannel('https://tvsen6.aynaott.com/BahrainSports1/index.m3u8')">Bahrain Sports</button>
+      <button onclick="switchChannel('https://d35j504z0x2vu2.cloudfront.net/v1/master/0bc8e8376bd8417a1b6761138aa41c26c7309312/powersports-world/pwrsp.m3u8')">Powersports World</button>
+      
+      
+      <button onclick="switchChannel('https://ktvhdsg.ekantipur.com:8443/ktvmax2025/match1/playlist.m3u8')">Max Live</button>      
+      
+       
+      <button onclick="switchChannel('https://a-cdn.klowdtv.com/live1/smc_720p/playlist.m3u8')">Sony Movie</button>      
+      
+      
+      <button onclick="switchChannel('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')">Test 1</button>
+      <button onclick="switchChannel('https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/level_0.ts')">Test 2</button>
+      <button onclick="switchChannel('https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd')">Test 3</button>
+      <button onclick="switchChannel('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')">Test 4</button>
+    </div>
+    
+    
+<br>    
+<!-- Telegram Bot Buttons -->
+<div class="telegram-bots">
+  <a href="http://t.me/CricHDBOT" target="_blank">CricHDBOT</a>
+  <a href="http://t.me/SportsZoneBOT" target="_blank">SportsZoneBOT</a>
+</div>    
+    
+    
+    
+    
+    
+    
+    <div id="online-counter">Online Now: 0 | Today: 0 | Total: 0</div>
+    <div id="ads-counter">Ads Shown: 0 | Ads Clicked: 0</div>
+    
+    
+    
+    <!-- Ads Box -->
+<!--    <div class="ads-box">
+      <div id="monetag_ad">🔴 Watch Ads & Support Us & ❤ From 🇵🇰...</div>
+    </div> -->
+    
+    
+    <p align="center">
+  <!-- Made in Pakistan Badge -->
+  <img src="https://img.shields.io/badge/Made%20in-🇵🇰%20Pakistan-01411C?style=flat-square&labelColor=ffffff&color=01411C&logoColor=ffffff&labelTextColor=000000" 
+       alt="Made in Pakistan">
+
+  <!-- Auto Update Badge -->
+  <img src="https://img.shields.io/badge/Auto_Update-Every_hour-blue?style=flat-square" 
+       alt="Auto Update">
+</p>
+
+    
+    
+    
+    
+    
+    
+    <!-- 1️⃣ player-init.js — Video.js প্লেয়ার ইনিশিয়ালাইজেশন
+
+কাজ: ভিডিও প্লেয়ার ইনিশিয়ালাইজ করে, Quality Selector, Playback Rate, PiP, Fullscreen ইত্যাদি সেটআপ করে। -->
+    <script>
+      // player-init.js
+      // কাজ: Video.js প্লেয়ার ইনিশিয়ালাইজ + Poster overlay কন্ট্রোল
+      const player = videojs("my-player", {
+        fluid: true,
+        autoplay: true,
+        controls: true,
+        preload: "auto",
+        controlBar: {
+          children: [
+              'playToggle', 
+              'progressControl', 
+              'volumePanel', 
+              'currentTimeDisplay', 
+              'timeDivider', 
+              'durationDisplay', 
+              'subsCapsButton', 
+              'playbackRateMenuButton', 
+              'qualitySelector', 
+              'pictureInPictureToggle', 
+              'fullscreenToggle']
+        },
+        playbackRates: [0.2, 0.5, 1, 1.5, 1.7, 2]
+      });
+      // Quality Selector init (Auto + available streams)
+      player.hlsQualitySelector({
+        displayCurrentQuality: true,
+        auto: true
+      });
+      // Poster overlay control
+      player.on("play", () => poster.classList.add("hidden"));
+      player.on("pause", () => poster.classList.remove("hidden"));
+      player.on("ended", () => poster.classList.remove("hidden"));
+      player.on("error", () => poster.classList.remove("hidden"));
+      // Poster ক্লিক করলে প্লে হবে
+      poster.addEventListener("click", () => {
+        player.play();
+        poster.classList.add("hidden");
+      });
+    </script>
+    
+    
+    
+    
+    
+    
+    <!--  2️⃣ channel-switch.js (Monetag Ad Fix সহ) -->
+    <script>
+      // channel-switch.js
+      // কাজ: প্রতিটি চ্যানেল পরিবর্তনের সময় Monetag Ads ট্রিগার + Firebase কাউন্টার আপডেট
+      let lastAdTime = 0;
+      let lastChannel = "";
+      // ভিডিও প্লে করার ফাংশন
+      function playChannel(src) {
+        let type = "video/mp4";
+        if (src.endsWith(".m3u8")) type = "application/x-mpegURL";
+        else if (src.endsWith(".ts")) type = "video/mp2t";
+        else if (src.endsWith(".mpd")) type = "application/dash+xml";
+        if (src.endsWith(".m3u8") && Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(player.tech_.el_);
+        } else {
+          player.src({
+            src: src,
+            type: type
+          });
+        }
+        player.play();
+      }
+      // Monetag Ads ট্রিগার
+      function triggerSwitchAd(channelUrl) {
+        const now = Date.now();
+        const adCooldown = 15 * 1000; // 15 সেকেন্ডে একবার
+        if (channelUrl === lastChannel && (now - lastAdTime) < adCooldown) {
+          return Promise.resolve();
+        }
+        lastAdTime = now;
+        lastChannel = channelUrl;
+        if (typeof show_9854118 === "function") {
+          show_9854118(); // Monetag Ad Show
+          incrementAdShown(); // ✅ Firebase কাউন্টার আপডেট
+          return Promise.resolve();
+        }
+        return Promise.resolve();
+      }
+      // চ্যানেল পরিবর্তন
+      function switchChannel(src) {
+        playChannel(src);
+        triggerSwitchAd(src).then(() => console.log("Ad shown for:", src)).catch(() => console.log("Ad failed:", src));
+      }
+      // Default channel লোড
+      window.addEventListener("load", () => playChannel("https://smart.bengaldigital.live/WWE/tracks-v1a1/mono.m3u8"));
+    </script>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <script>
+      // 3️⃣ firebase-config.js — Firebase SDK Setup
+      // কাজ: Firebase App ইনিশিয়ালাইজ করে, Realtime Database এ সংযোগ স্থাপন করে।
+      // firebase-config.js
+      // কাজ: Firebase App ইনিশিয়ালাইজ + Database সংযোগ
+      const firebaseConfig = {
+        apiKey: "AIzaSyBL6nN2TH4uyp8iso6Q99_QHkYyHnslXjU",
+        authDomain: "tg-bot-sirome-tv.firebaseapp.com",
+        databaseURL: "https://tg-bot-sirome-tv-default-rtdb.firebaseio.com",
+        projectId: "tg-bot-sirome-tv",
+        storageBucket: "tg-bot-sirome-tv.firebasestorage.app",
+        messagingSenderId: "764854962010",
+        appId: "1:764854962010:web:6a77f650622614de4d5563",
+        measurementId: "G-8G48FV41TH"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+    </script>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <script>
+      //4️⃣ visitor-counter.js — Online / Total / Today Visitors Counter
+      // কাজ: প্রতিটি ইউজারকে unique session ID দিয়ে ট্র্যাক করে। 
+      // Online / Today / Total visitor সংখ্যা দেখায়।
+      //Page unload হলে online থেকে remove করে।
+      // visitor-counter.js
+      // visitor-counter-active.js — Active Online Users
+      // কাজ: Online / Today / Total Visitors কাউন্টার
+      const usersRef = db.ref("onlineUsers");
+      const totalRef = db.ref("totalVisitors");
+      const todayRef = db.ref("dailyVisitors/" + new Date().toISOString().slice(0, 10));
+      const sessionId = "user_" + Math.random().toString(36).substring(2, 12);
+      usersRef.child(sessionId).set({
+        lastSeen: Date.now()
+      });
+      totalRef.transaction(current => (current || 0) + 1);
+      todayRef.transaction(current => (current || 0) + 1);
+      window.addEventListener("beforeunload", () => usersRef.child(sessionId).remove());
+      const onlineCounter = document.getElementById("online-counter");
+      const ACTIVE_THRESHOLD = 5 * 1000;
+
+      function updateOnlineCounter() {
+        usersRef.once("value", snap => {
+          const onlineUsers = snap.val() || {};
+          const now = Date.now();
+          const activeUsers = Object.values(onlineUsers).filter(u => (now - u.lastSeen) <= ACTIVE_THRESHOLD);
+          const totalOnline = activeUsers.length;
+          totalRef.once("value").then(snap2 => {
+            const totalVisitors = snap2.val() || 0;
+            todayRef.once("value").then(snap3 => {
+              const todayVisitors = snap3.val() || 0;
+              onlineCounter.innerHTML = `👥 Online: ${totalOnline} | 📅 Today: ${todayVisitors} | 🌍 Total: ${totalVisitors}`;
+            });
+          });
+        });
+      }
+      updateOnlineCounter();
+      usersRef.on("value", updateOnlineCounter);
+      setInterval(() => usersRef.child(sessionId).update({
+        lastSeen: Date.now()
+      }), 15000);
+      setInterval(() => {
+        const now = Date.now();
+        usersRef.once("value").then(snap => {
+          const onlineUsers = snap.val() || {};
+          for (const key in onlineUsers) {
+            if (now - onlineUsers[key].lastSeen > ACTIVE_THRESHOLD * 2) {
+              usersRef.child(key).remove();
+            }
+          }
+        });
+      }, 5000);
+    </script>
+    
+    
+    
+    
+    
+    <script>
+      //5️⃣ ads-tracker.js (Fixed ✅)
+      /* ads-tracker.js — Monetag ADS Shown & Clicked Counter */
+      const adsRef = firebase.database().ref("adsStats");
+      const adsCounter = document.getElementById("ads-counter");
+      // Counter Display Update
+      function updateAdsCounter() {
+        adsRef.once("value").then(snap => {
+          const data = snap.val() || {};
+          const shown = data.totalShown || 0;
+          const clicked = data.totalClicked || 0;
+          adsCounter.innerText = `▶️ Watched: ${shown} | ✅ Checked:  ${clicked}`;
+        });
+      }
+      adsRef.on("value", updateAdsCounter);
+      // Ad Shown Increment
+      function incrementAdShown() {
+        adsRef.child("totalShown").transaction(current => (current || 0) + 1);
+      }
+      // Ad Clicked Increment
+      function incrementAdClicked() {
+        adsRef.child("totalClicked").transaction(current => (current || 0) + 1);
+      }
+      // ✅ Monetag Click Callback Bind
+      window.show_9854118_click_callback = incrementAdClicked;
+    </script>
+    
+    
+    
+    
+    
+    
+    <script>
+      //6️⃣ custom-link-player.js
+      // custom-link-player.js
+      // কাজ: ইউজার ইনপুট লিংক প্লে + Clear
+      const userLinkInput = document.getElementById('userVideoLink');
+      const playLinkBtn = document.getElementById('playLinkBtn');
+      const clearLinkBtn = document.getElementById('clearLinkBtn');
+      // Play Video
+      playLinkBtn.addEventListener('click', () => {
+        const url = userLinkInput.value.trim();
+        if (!url) return alert("Please enter a video link!");
+        let type = "video/mp4";
+        if (url.endsWith(".m3u8")) type = "application/x-mpegURL";
+        else if (url.endsWith(".ts")) type = "video/mp2t";
+        else if (url.endsWith(".mpd")) type = "application/dash+xml";
+        if (url.endsWith(".m3u8") && Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(url);
+          hls.attachMedia(player.tech_.el_);
+        } else {
+          player.src({
+            src: url,
+            type: type
+          });
+        }
+        player.play();
+      });
+      // Clear Input
+      clearLinkBtn.addEventListener('click', () => {
+        userLinkInput.value = '';
+        userLinkInput.focus();
+      });
+    </script>
+    
+    <script>
+      // Disable right-click context menu
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+  document.addEventListener('keydown', function(e) {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+      (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+      (e.ctrlKey && e.key === 'U') ||
+      (e.metaKey && e.altKey && e.key === 'I') ||
+      (e.metaKey && e.altKey && e.key === 'J')
+    ) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Disable drag and drop for images
+  document.addEventListener('dragstart', function(e) {
+    if (e.target.tagName === 'IMG') {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Disable text selection
+  document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+    return false;
+  });    
+    </script>
+    
+    <!--Use the specified version-->
+ <!-- <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool@x.x.x'></script> -->
+<!--Use latest version-->
+ <!-- <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool@latest'></script></body> -->
+    
+  </body>
+</html>
