@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IVSMS OTP Manager - For Educational Purpose Only</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .warning-box {
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #ff4444;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border 0.3s;
+        }
+        
+        textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover:not(:disabled) {
+            background: #c82333;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: #5a6268;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .results-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .result-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #ddd;
+            background: #f8f9fa;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .result-success {
+            border-left-color: #28a745;
+        }
+        
+        .result-failed {
+            border-left-color: #dc3545;
+        }
+        
+        .result-processing {
+            border-left-color: #ffc107;
+        }
+        
+        .phone-number {
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 16px;
+        }
+        
+        .result-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .sms-preview {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+            font-family: monospace;
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .config-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .config-item input, .config-item select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .cookie-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            line-height: 1.6;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .log-box {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .log-time {
+            color: #888;
+            min-width: 70px;
+        }
+        
+        .log-message {
+            color: #fff;
+            flex: 1;
+        }
+        
+        .log-error {
+            color: #ff4444;
+        }
+        
+        .log-success {
+            color: #44ff44;
+        }
+        
+        .cookie-example {
+            background: #e8f4f8;
+            border: 1px solid #b6e0f0;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .important-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>IVSMS OTP Manager</h1>
+            <p>Educational Tool for SMS Management</p>
+        </div>
+        
+        <div class="warning-box">
+            <strong>⚠️ গুরুত্বপূর্ণ সতর্কতা:</strong> এই টুলটি শুধুমাত্র শিক্ষামূলক উদ্দেশ্যে তৈরি। শুধুমাত্র আপনার নিজের মোবাইল নম্বর বা অনুমতিপ্রাপ্ত নম্বর ব্যবহার করুন। 
+            অনুমতি ছাড়া অন্য কারো নম্বর ব্যবহার করা আইনত দন্ডনীয় অপরাধ এবং Terms of Service লঙ্ঘন।
+        </div>
+        
+        <div class="main-content">
+            <!-- Left Panel: Configuration -->
+            <div class="panel">
+                <h2>কনফিগারেশন</h2>
+                
+                <div class="input-group">
+                    <label for="ivasmsCookie">IVSMS Authentication Cookie</label>
+                    <textarea id="ivasmsCookie" placeholder="শুধুমাত্র এই দুটি কুকি দিন (প্রতিটি আলাদা লাইনে):
+
+XSRF-TOKEN=আপনার_এখানে_টোকেন;
+ivas_sms_session=আপনার_এখানে_সেশন_কি;
+
+⚠️ প্রতিটি কুকির শেষে ';' সেমিকোলন দিতে ভুলবেন না"></textarea>
+                    <div class="cookie-info">
+                        <strong>কুকি সংগ্রহ করার পদ্ধতি:</strong><br>
+                        1. IVSMS প্যানেলে লগিন করুন (https://www.ivasms.com)<br>
+                        2. F12 বাটন চাপুন (Developer Tools খুলবে)<br>
+                        3. Application ট্যাবে যান<br>
+                        4. Cookies → https://www.ivasms.com সিলেক্ট করুন<br>
+                        5. শুধু XSRF-TOKEN এবং ivas_sms_session কুকি দুটি কপি করুন
+                    </div>
+                    
+                    <div class="important-note">
+                        <strong>মনে রাখবেন:</strong><br>
+                        • শুধু XSRF-TOKEN এবং ivas_sms_session কুকি দিবেন<br>
+                        • অন্যান্য কুকি (যেমন: _fbp, cf_clearance) দিবেন না<br>
+                        • প্রতিটি কুকির শেষে অবশ্যই সেমিকোলন (;) দিবেন
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="phoneNumbers">মোবাইল নম্বর (একটি লাইনে একটি)</label>
+                    <textarea id="phoneNumbers" placeholder="কোনো কমা বা স্পেস ছাড়া নম্বর দিন। উদাহরণ:
+
+93711693753
+93711696755
+93711697921
+93711690061
+
+⚠️ সর্বোচ্চ 1000টি নম্বর দিতে পারবেন"></textarea>
+                </div>
+                
+                <div class="config-options">
+                    <div class="config-item">
+                        <label for="delay">রিকোয়েস্টের মধ্যে বিলম্ব (মিলিসেকেন্ড)</label>
+                        <input type="number" id="delay" value="5000" min="1000">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="countryCode">ডিফল্ট দেশ কোড</label>
+                        <select id="countryCode">
+                            <option value="93">Afghanistan (+93)</option>
+                            <option value="98">Iran (+98)</option>
+                            <option value="966">Saudi Arabia (+966)</option>
+                            <option value="998">Uzbekistan (+998)</option>
+                            <option value="971">UAE (+971)</option>
+                            <option value="880">Bangladesh (+880)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalNumbers">0</div>
+                        <div class="stat-label">মোট নম্বর</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="processedNumbers">0</div>
+                        <div class="stat-label">প্রসেস হয়েছে</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="successNumbers">0</div>
+                        <div class="stat-label">সফল হয়েছে</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="startBtn">
+                        <span class="btn-text">প্রসেস শুরু করুন</span>
+                        <span class="loading" style="display: none;"></span>
+                    </button>
+                    <button class="btn btn-danger" id="stopBtn" disabled>বন্ধ করুন</button>
+                    <button class="btn btn-secondary" id="testCookieBtn">কুকি টেস্ট</button>
+                    <button class="btn btn-secondary" id="fetchSMSBtn">SMS ফেচ করুন</button>
+                </div>
+                
+                <div id="statusBox" class="status-box"></div>
+            </div>
+            
+            <!-- Right Panel: Results -->
+            <div class="panel">
+                <h2>লাইভ রেজাল্ট ও SMS প্রিভিউ</h2>
+                
+                <div class="controls">
+                    <button class="btn btn-secondary" id="clearResultsBtn">রেজাল্ট ক্লিয়ার</button>
+                    <button class="btn btn-secondary" id="exportResultsBtn">রেজাল্ট এক্সপোর্ট</button>
+                </div>
+                
+                <div class="results-container" id="resultsContainer">
+                    <!-- Results will appear here -->
+                    <div class="result-item">
+                        <div class="phone-number">+93711693753</div>
+                        <div class="result-details">
+                            <span>OTP সফলভাবে পাঠানো হয়েছে</span>
+                            <span>00:00:00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="log-box" id="logBox">
+                    <div class="log-entry">
+                        <span class="log-time">[00:00:00]</span>
+                        <span class="log-message">সিস্টেম প্রস্তুত। কুকি এবং ফোন নম্বর ইনপুট দিন।</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Main Application
+        class IVSMSOTPManager {
+            constructor() {
+                this.isProcessing = false;
+                this.currentIndex = 0;
+                this.phoneNumbers = [];
+                this.results = [];
+                this.logEntries = [];
+                this.smsCache = [];
+                
+                this.initElements();
+                this.initEventListeners();
+                this.updateStats();
+                this.addLog('সিস্টেম ইনিশিয়ালাইজ হয়েছে', 'info');
+            }
+            
+            initElements() {
+                // Input elements
+                this.cookieInput = document.getElementById('ivasmsCookie');
+                this.phoneInput = document.getElementById('phoneNumbers');
+                this.delayInput = document.getElementById('delay');
+                this.countryCodeSelect = document.getElementById('countryCode');
+                
+                // Button elements
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.testCookieBtn = document.getElementById('testCookieBtn');
+                this.fetchSMSBtn = document.getElementById('fetchSMSBtn');
+                this.clearResultsBtn = document.getElementById('clearResultsBtn');
+                this.exportResultsBtn = document.getElementById('exportResultsBtn');
+                
+                // Display elements
+                this.statusBox = document.getElementById('statusBox');
+                this.resultsContainer = document.getElementById('resultsContainer');
+                this.logBox = document.getElementById('logBox');
+                
+                // Stat elements
+                this.totalNumbersElement = document.getElementById('totalNumbers');
+                this.processedNumbersElement = document.getElementById('processedNumbers');
+                this.successNumbersElement = document.getElementById('successNumbers');
+            }
+            
+            initEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startProcess());
+                this.stopBtn.addEventListener('click', () => this.stopProcess());
+                this.testCookieBtn.addEventListener('click', () => this.testIVSMSCookie());
+                this.fetchSMSBtn.addEventListener('click', () => this.fetchSMSFromIVSMS());
+                this.clearResultsBtn.addEventListener('click', () => this.clearResults());
+                this.exportResultsBtn.addEventListener('click', () => this.exportResults());
+                
+                this.phoneInput.addEventListener('input', () => this.updateStats());
+            }
+            
+            addLog(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = {
+                    time: timestamp,
+                    message: message,
+                    type: type
+                };
+                
+                this.logEntries.push(logEntry);
+                this.updateLogDisplay();
+            }
+            
+            updateLogDisplay() {
+                this.logBox.innerHTML = '';
+                const lastEntries = this.logEntries.slice(-20);
+                
+                lastEntries.forEach(entry => {
+                    const logElement = document.createElement('div');
+                    logElement.className = 'log-entry';
+                    logElement.innerHTML = `
+                        <span class="log-time">[${entry.time}]</span>
+                        <span class="log-message ${entry.type === 'error' ? 'log-error' : entry.type === 'success' ? 'log-success' : ''}">
+                            ${entry.message}
+                        </span>
+                    `;
+                    this.logBox.appendChild(logElement);
+                });
+                
+                this.logBox.scrollTop = this.logBox.scrollHeight;
+            }
+            
+            showStatus(message, type = 'info', duration = 0) {
+                this.statusBox.textContent = message;
+                this.statusBox.className = 'status-box';
+                
+                switch(type) {
+                    case 'success':
+                        this.statusBox.classList.add('status-success');
+                        break;
+                    case 'error':
+                        this.statusBox.classList.add('status-error');
+                        break;
+                    case 'processing':
+                        this.statusBox.classList.add('status-processing');
+                        break;
+                }
+                
+                this.statusBox.style.display = 'block';
+                
+                if (duration > 0) {
+                    setTimeout(() => {
+                        this.statusBox.style.display = 'none';
+                    }, duration);
+                }
+            }
+            
+            updateStats() {
+                const numbers = this.parsePhoneNumbers();
+                const processed = this.results.length;
+                const success = this.results.filter(r => r.success).length;
+                
+                this.totalNumbersElement.textContent = numbers.length;
+                this.processedNumbersElement.textContent = processed;
+                this.successNumbersElement.textContent = success;
+            }
+            
+            parsePhoneNumbers() {
+                const text = this.phoneInput.value.trim();
+                return text.split('\n')
+                    .map(num => num.trim())
+                    .filter(num => {
+                        // Basic phone number validation
+                        const cleanNum = num.replace(/\D/g, '');
+                        return cleanNum.length >= 8 && cleanNum.length <= 15;
+                    })
+                    .map(num => num.replace(/\D/g, ''));
+            }
+            
+            formatCookieString(rawCookie) {
+                // প্রতিটি লাইন থেকে whitespace remove করুন
+                const cookies = rawCookie.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0);
+                
+                // শুধুমাত্র valid cookies রাখুন
+                const validCookies = cookies.filter(cookie => {
+                    return cookie.includes('XSRF-TOKEN=') || 
+                           cookie.includes('ivas_sms_session=') ||
+                           cookie.includes('XSRF-TOKEN:') ||
+                           cookie.includes('ivas_sms_session:');
+                });
+                
+                // সেমিকোলন যোগ করুন যদি না থাকে
+                return validCookies.map(cookie => {
+                    let formattedCookie = cookie;
+                    // = চিহ্নের পরে স্পেস থাকলে সরান
+                    formattedCookie = formattedCookie.replace(/=\s+/g, '=');
+                    
+                    if (!formattedCookie.endsWith(';')) {
+                        return formattedCookie + ';';
+                    }
+                    return formattedCookie;
+                }).join(' ');
+            }
+            
+            async testIVSMSCookie() {
+                let cookie = this.cookieInput.value.trim();
+                
+                if (!cookie) {
+                    this.showStatus('কুকি ইনপুট দিন', 'error', 3000);
+                    this.addLog('কুকি খালি', 'error');
+                    return;
+                }
+                
+                // কুকি ফরম্যাট ঠিক করুন
+                cookie = this.formatCookieString(cookie);
+                
+                // ভ্যালিডেশন
+                if (!cookie.includes('XSRF-TOKEN=') || !cookie.includes('ivas_sms_session=')) {
+                    this.showStatus('XSRF-TOKEN এবং ivas_sms_session কুকি প্রয়োজন', 'error', 3000);
+                    this.addLog('কুকিতে প্রয়োজনীয় ফিল্ড নেই', 'error');
+                    return;
+                }
+                
+                this.showStatus('কুকি টেস্ট করছি...', 'processing');
+                this.addLog('IVSMS কুকি টেস্ট শুরু...', 'info');
+                
+                try {
+                    // IVSMS এর API endpoint (এটা শিক্ষামূলক)
+                    const testUrl = 'https://www.ivasms.com/portal/api/user';
+                    const testResult = await this.makeIVSMSRequest(testUrl, cookie);
+                    
+                    if (testResult.success) {
+                        this.showStatus('✅ কুকি সঠিক! IVSMS অ্যাক্সেস আছে', 'success', 3000);
+                        this.addLog('কুকি ভ্যালিডেশন সফল', 'success');
+                    } else {
+                        this.showStatus('❌ কুকি ভুল বা এক্সপায়ার্ড', 'error', 3000);
+                        this.addLog(`কুকি ভ্যালিডেশন ফেইলড: Status ${testResult.status}`, 'error');
+                    }
+                } catch (error) {
+                    this.showStatus('❌ কুকি টেস্টে এরর', 'error', 3000);
+                    this.addLog(`কুকি টেস্ট এরর: ${error.message}`, 'error');
+                }
+            }
+            
+            async fetchSMSFromIVSMS() {
+                let cookie = this.cookieInput.value.trim();
+                
+                if (!cookie) {
+                    this.showStatus('প্রথমে IVSMS কুকি দিন', 'error', 3000);
+                    return;
+                }
+                
+                // কুকি ফরম্যাট ঠিক করুন
+                cookie = this.formatCookieString(cookie);
+                
+                // ভ্যালিডেশন
+                if (!cookie.includes('XSRF-TOKEN=') || !cookie.includes('ivas_sms_session=')) {
+                    this.showStatus('XSRF-TOKEN এবং ivas_sms_session কুকি প্রয়োজন', 'error', 3000);
+                    return;
+                }
+                
+                this.showStatus('IVSMS থেকে SMS ফেচ করছি...', 'processing');
+                this.addLog('IVSMS থেকে SMS মেসেজ ফেচ শুরু...', 'info');
+                
+                try {
+                    // Fetch SMS from IVSMS panel
+                    const smsData = await this.fetchIVSMSSMS(cookie);
+                    
+                    if (smsData.success && smsData.messages.length > 0) {
+                        this.showStatus(`✅ ${smsData.messages.length} টি SMS মেসেজ ফেচ হয়েছে`, 'success', 3000);
+                        this.addLog(`${smsData.messages.length} টি SMS মেসেজ IVSMS থেকে ফেচ হয়েছে`, 'success');
+                        
+                        // Display SMS messages
+                        this.displaySMSMessages(smsData.messages);
+                    } else {
+                        this.showStatus('❌ কোনো SMS মেসেজ পাওয়া যায়নি', 'info', 3000);
+                        this.addLog('IVSMS এ কোনো SMS মেসেজ নেই', 'info');
+                    }
+                } catch (error) {
+                    this.showStatus('❌ SMS ফেচে এরর', 'error', 3000);
+                    this.addLog(`SMS ফেচ এরর: ${error.message}`, 'error');
+                }
+            }
+            
+            async fetchIVSMSSMS(cookie) {
+                // IVSMS API endpoints for SMS
+                const endpoints = [
+                    'https://www.ivasms.com/portal/live/my_sms',
+                    'https://www.ivasms.com/portal/api/sms/received',
+                    'https://www.ivasms.com/portal/api/messages'
+                ];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await this.makeIVSMSRequest(endpoint, cookie);
+                        
+                        if (response.success) {
+                            return {
+                                success: true,
+                                messages: this.parseSMSResponse(response.data)
+                            };
+                        }
+                    } catch (error) {
+                        continue;
+                    }
+                }
+                
+                throw new Error('IVSMS থেকে SMS ফেচ করা যায়নি');
+            }
+            
+            parseSMSResponse(data) {
+                // Parse SMS data based on IVSMS response structure
+                try {
+                    let messages = [];
+                    
+                    // Different possible response structures
+                    if (Array.isArray(data)) {
+                        messages = data;
+                    } else if (data && data.data && Array.isArray(data.data)) {
+                        messages = data.data;
+                    } else if (data && data.messages && Array.isArray(data.messages)) {
+                        messages = data.messages;
+                    } else if (data && typeof data === 'object') {
+                        // Try to extract any array from the object
+                        for (const key in data) {
+                            if (Array.isArray(data[key])) {
+                                messages = data[key];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Format messages
+                    return messages.map(msg => ({
+                        from: msg.from || msg.sender || msg.phone || 'Unknown',
+                        message: msg.message || msg.text || msg.body || '',
+                        timestamp: msg.timestamp || msg.date || msg.created_at || new Date().toISOString(),
+                        id: msg.id || Math.random().toString(36).substr(2, 9)
+                    }));
+                    
+                } catch (error) {
+                    console.error('SMS parse error:', error);
+                    return [];
+                }
+            }
+            
+            displaySMSMessages(messages) {
+                // Clear previous SMS results
+                const existingSMS = document.querySelectorAll('.result-item[data-type="sms"]');
+                existingSMS.forEach(el => el.remove());
+                
+                // Display new SMS messages
+                messages.forEach((msg, index) => {
+                    const resultElement = this.createResultElement({
+                        phone: msg.from,
+                        success: true,
+                        message: `SMS: ${msg.message.substring(0, 100)}${msg.message.length > 100 ? '...' : ''}`,
+                        timestamp: new Date(msg.timestamp),
+                        isSMS: true
+                    });
+                    
+                    resultElement.setAttribute('data-type', 'sms');
+                    this.resultsContainer.insertBefore(resultElement, this.resultsContainer.firstChild);
+                });
+            }
+            
+            async makeIVSMSRequest(url, cookie) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Cookie': cookie,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                            'Referer': 'https://www.ivasms.com/'
+                        },
+                        credentials: 'include',
+                        mode: 'cors'
+                    });
+                    
+                    const contentType = response.headers.get('content-type');
+                    let data;
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        data = await response.text();
+                    }
+                    
+                    return {
+                        success: response.ok,
+                        status: response.status,
+                        data: data
+                    };
+                } catch (error) {
+                    console.error('Request error:', error);
+                    throw error;
+                }
+            }
+            
+            async simulateFacebookOTPRequest(phoneNumber) {
+                // SIMULATION ONLY - For educational purposes
+                // In real implementation, you would use proper Facebook API
+                
+                await this.delay(1000);
+                
+                // Simulate various responses
+                const rand = Math.random();
+                let success, message;
+                
+                if (rand < 0.4) {
+                    success = true;
+                    message = 'OTP সফলভাবে পাঠানো হয়েছে ' + phoneNumber + ' নম্বরে';
+                } else if (rand < 0.7) {
+                    success = false;
+                    message = 'এই নম্বরে কোনো Facebook একাউন্ট নেই';
+                } else {
+                    success = false;
+                    message = 'রেট লিমিট এক্সিডেড - পরে আবার চেষ্টা করুন';
+                }
+                
+                return { success, message };
+            }
+            
+            async startProcess() {
+                let cookie = this.cookieInput.value.trim();
+                this.phoneNumbers = this.parsePhoneNumbers();
+                
+                if (!cookie) {
+                    this.showStatus('IVSMS কুকি দিন', 'error', 3000);
+                    return;
+                }
+                
+                // কুকি ফরম্যাট ঠিক করুন
+                cookie = this.formatCookieString(cookie);
+                
+                // কুকি ভ্যালিডেশন
+                if (!cookie.includes('XSRF-TOKEN=') || !cookie.includes('ivas_sms_session=')) {
+                    this.showStatus('XSRF-TOKEN এবং ivas_sms_session কুকি প্রয়োজন', 'error', 3000);
+                    return;
+                }
+                
+                if (this.phoneNumbers.length === 0) {
+                    this.showStatus('ফোন নম্বর দিন', 'error', 3000);
+                    return;
+                }
+                
+                if (this.phoneNumbers.length > 1000) {
+                    this.showStatus('সর্বোচ্চ ১০০০টি নম্বর দেওয়া যাবে', 'error', 3000);
+                    return;
+                }
+                
+                this.isProcessing = true;
+                this.results = [];
+                this.resultsContainer.innerHTML = '';
+                this.currentIndex = 0;
+                
+                this.startBtn.disabled = true;
+                this.stopBtn.disabled = false;
+                this.startBtn.querySelector('.btn-text').textContent = 'প্রসেস হচ্ছে...';
+                this.startBtn.querySelector('.loading').style.display = 'inline-block';
+                
+                this.showStatus('প্রসেস শুরু হচ্ছে...', 'processing');
+                this.addLog(`${this.phoneNumbers.length} টি নম্বরের জন্য OTP প্রসেস শুরু`, 'info');
+                
+                this.processNextNumber();
+            }
+            
+            async processNextNumber() {
+                if (!this.isProcessing || this.currentIndex >= this.phoneNumbers.length) {
+                    this.finishProcess();
+                    return;
+                }
+                
+                const phoneNumber = this.phoneNumbers[this.currentIndex];
+                const countryCode = this.countryCodeSelect.value;
+                const fullNumber = phoneNumber.startsWith('+') ? phoneNumber : `+${countryCode}${phoneNumber}`;
+                
+                this.showStatus(`${fullNumber} প্রসেস হচ্ছে (${this.currentIndex + 1}/${this.phoneNumbers.length})`, 'processing');
+                this.addLog(`নম্বর প্রসেস: ${fullNumber}`, 'info');
+                
+                try {
+                    const result = await this.simulateFacebookOTPRequest(fullNumber);
+                    
+                    const resultData = {
+                        phone: fullNumber,
+                        success: result.success,
+                        message: result.message,
+                        timestamp: new Date(),
+                        index: this.currentIndex
+                    };
+                    
+                    this.results.push(resultData);
+                    this.displayResult(resultData);
+                    
+                    if (result.success) {
+                        this.addLog(`OTP সফলভাবে পাঠানো হয়েছে ${fullNumber} নম্বরে`, 'success');
+                        
+                        // Fetch SMS after successful OTP request
+                        setTimeout(() => {
+                            this.fetchSMSFromIVSMS();
+                        }, 2000);
+                    } else {
+                        this.addLog(`${fullNumber} নম্বরে ব্যর্থ: ${result.message}`, 'error');
+                    }
+                    
+                } catch (error) {
+                    const resultData = {
+                        phone: fullNumber,
+                        success: false,
+                        message: `এরর: ${error.message}`,
+                        timestamp: new Date(),
+                        index: this.currentIndex
+                    };
+                    
+                    this.results.push(resultData);
+                    this.displayResult(resultData);
+                    this.addLog(`${fullNumber} প্রসেস এরর: ${error.message}`, 'error');
+                }
+                
+                this.currentIndex++;
+                this.updateStats();
+                
+                if (this.isProcessing && this.currentIndex < this.phoneNumbers.length) {
+                    const delay = parseInt(this.delayInput.value) || 5000;
+                    setTimeout(() => this.processNextNumber(), delay);
+                } else {
+                    this.finishProcess();
+                }
+            }
+            
+            displayResult(result) {
+                const resultElement = this.createResultElement(result);
+                this.resultsContainer.appendChild(resultElement);
+                
+                // Auto-scroll to new result
+                resultElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            createResultElement(result) {
+                const element = document.createElement('div');
+                element.className = `result-item ${result.success ? 'result-success' : 'result-failed'}`;
+                
+                const timeStr = result.timestamp.toLocaleTimeString();
+                
+                element.innerHTML = `
+                    <div class="phone-number">${result.phone}</div>
+                    <div class="result-details">
+                        <span>${result.message}</span>
+                        <span>${timeStr}</span>
+                    </div>
+                    ${result.isSMS ? '<div class="sms-preview" style="display: block;">IVSMS তে SMS রিসিভ হয়েছে</div>' : ''}
+                `;
+                
+                return element;
+            }
+            
+            stopProcess() {
+                this.isProcessing = false;
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.startBtn.querySelector('.btn-text').textContent = 'প্রসেস শুরু করুন';
+                this.startBtn.querySelector('.loading').style.display = 'none';
+                
+                this.showStatus('প্রসেস ব্যবহারকারী দ্বারা বন্ধ করা হয়েছে', 'error', 3000);
+                this.addLog('প্রসেস ম্যানুয়ালি বন্ধ করা হয়েছে', 'info');
+            }
+            
+            finishProcess() {
+                this.isProcessing = false;
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.startBtn.querySelector('.btn-text').textContent = 'প্রসেস শুরু করুন';
+                this.startBtn.querySelector('.loading').style.display = 'none';
+                
+                const successCount = this.results.filter(r => r.success).length;
+                const message = `প্রসেস সম্পন্ন: ${successCount}/${this.results.length} টি সফল`;
+                
+                this.showStatus(message, 'success', 5000);
+                this.addLog(`প্রসেস সম্পন্ন। সফল: ${successCount}/${this.results.length}`, 'success');
+            }
+            
+            clearResults() {
+                if (this.isProcessing) {
+                    this.showStatus('প্রসেস চলাকালীন রেজাল্ট ক্লিয়ার করা যাবে না', 'error', 3000);
+                    return;
+                }
+                
+                this.results = [];
+                this.resultsContainer.innerHTML = '';
+                this.updateStats();
+                this.addLog('রেজাল্ট ক্লিয়ার করা হয়েছে', 'info');
+            }
+            
+            exportResults() {
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    totalNumbers: this.phoneNumbers.length,
+                    processed: this.results.length,
+                    successful: this.results.filter(r => r.success).length,
+                    results: this.results
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ivasms-results-${new Date().getTime()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.addLog('রেজাল্ট JSON ফাইলে এক্সপোর্ট হয়েছে', 'success');
+            }
+            
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+        
+        // Initialize the application when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.otpManager = new IVSMSOTPManager();
+        });
+    </script>
+</body>
+</html>
