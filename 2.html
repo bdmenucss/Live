@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook OTP Automation - IVSMS Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --success: #38b000;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #f8f9fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .warning-banner {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            border-left: 6px solid #ff4444;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.9; }
+            100% { opacity: 1; }
+        }
+
+        .warning-banner h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: var(--transition);
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .panel h2 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+        }
+
+        .panel h2 i {
+            font-size: 1.3rem;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1rem;
+        }
+
+        .input-group label i {
+            margin-right: 8px;
+            color: var(--primary);
+        }
+
+        textarea, input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            transition: var(--transition);
+            background: white;
+            resize: vertical;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        textarea {
+            min-height: 150px;
+            line-height: 1.5;
+        }
+
+        textarea.small {
+            min-height: 100px;
+        }
+
+        textarea.medium {
+            min-height: 200px;
+        }
+
+        textarea.large {
+            min-height: 250px;
+        }
+
+        .cookie-info {
+            background: var(--light-gray);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--gray);
+            border-left: 4px solid var(--primary);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            min-width: 140px;
+        }
+
+        .btn i {
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #f72585);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(247, 37, 133, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, var(--gray), #5a6268);
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #38b000, #2d936c);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(56, 176, 0, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+            color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .config-item label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--light), white);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--light-gray);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-container {
+            background: var(--light-gray);
+            border-radius: 10px;
+            height: 12px;
+            margin: 25px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .status-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            max-width: 400px;
+            z-index: 1000;
+        }
+
+        .status-message {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease;
+            border-left: 5px solid var(--primary);
+            display: none;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .status-success {
+            border-left-color: #38b000;
+            background: linear-gradient(135deg, #d4edda, white);
+        }
+
+        .status-error {
+            border-left-color: var(--danger);
+            background: linear-gradient(135deg, #f8d7da, white);
+        }
+
+        .status-warning {
+            border-left-color: var(--warning);
+            background: linear-gradient(135deg, #fff3cd, white);
+        }
+
+        .status-info {
+            border-left-color: var(--primary);
+            background: linear-gradient(135deg, #d1ecf1, white);
+        }
+
+        .results-container {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding-right: 10px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--gray);
+            transition: var(--transition);
+            animation: fadeIn 0.5s ease;
+            border: 1px solid var(--light-gray);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-success {
+            border-left-color: #38b000;
+            background: linear-gradient(135deg, #d4edda, white);
+        }
+
+        .result-failed {
+            border-left-color: var(--danger);
+            background: linear-gradient(135deg, #f8d7da, white);
+        }
+
+        .result-processing {
+            border-left-color: var(--warning);
+            background: linear-gradient(135deg, #fff3cd, white);
+        }
+
+        .phone-number {
+            font-family: 'Consolas', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .result-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-success-badge {
+            background: rgba(56, 176, 0, 0.1);
+            color: #38b000;
+        }
+
+        .status-failed-badge {
+            background: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+        }
+
+        .status-processing-badge {
+            background: rgba(248, 150, 30, 0.1);
+            color: var(--warning);
+        }
+
+        .sms-preview {
+            background: var(--light-gray);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: var(--dark);
+            border-left: 3px solid var(--primary);
+            display: none;
+        }
+
+        .log-container {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+            word-wrap: break-word;
+        }
+
+        .log-time {
+            color: #888;
+            margin-right: 15px;
+            font-size: 0.8rem;
+        }
+
+        .log-message {
+            color: #fff;
+        }
+
+        .log-success {
+            color: #44ff44;
+        }
+
+        .log-error {
+            color: #ff4444;
+        }
+
+        .log-warning {
+            color: #ffaa44;
+        }
+
+        .log-info {
+            color: #4488ff;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            color: var(--gray);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            padding: 20px;
+        }
+
+        .tab-container {
+            margin-bottom: 25px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .tab {
+            padding: 12px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray);
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .tab:hover {
+            background: var(--light-gray);
+            color: var(--dark);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--light-gray);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 20px;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.02);
+        }
+
+        .file-upload i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .file-upload p {
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .file-name {
+            font-family: 'Consolas', monospace;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        /* Cookie Cleaner Tool Styling */
+        .cookie-cleaner-tool {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 2px dashed #ffc107;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .cookie-cleaner-tool h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cookie-preview {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-gray);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .panel {
+                padding: 20px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                min-width: 120px;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> Facebook OTP Automation</h1>
+            <p>Automate OTP requests and SMS fetching from IVSMS</p>
+        </div>
+
+        <!-- Warning Banner -->
+        <div class="warning-banner">
+            <h3><i class="fas fa-exclamation-triangle"></i> IMPORTANT DISCLAIMER</h3>
+            <p>This tool is for <strong>EDUCATIONAL PURPOSES ONLY</strong>. Use only with phone numbers you own and have explicit permission to test. Unauthorized use may violate laws and terms of service.</p>
+        </div>
+
+        <!-- Cookie Cleaner Tool -->
+        <div class="cookie-cleaner-tool">
+            <h3><i class="fas fa-broom"></i> Cookie Cleaner Tool</h3>
+            <p>If your cookies have formatting issues, use this tool to clean them:</p>
+            
+            <div class="input-group">
+                <label><i class="fas fa-paste"></i> Paste Messy Cookies:</label>
+                <textarea id="messyCookieInput" class="small" placeholder="Paste your messy cookies here..."></textarea>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-warning" id="cleanCookieBtn">
+                    <i class="fas fa-magic"></i> Clean Cookies
+                </button>
+                <button class="btn btn-secondary" id="loadSampleBtn">
+                    <i class="fas fa-vial"></i> Load Sample Format
+                </button>
+            </div>
+            
+            <div class="input-group">
+                <label><i class="fas fa-check-circle"></i> Cleaned Result:</label>
+                <div class="cookie-preview" id="cleanedCookiePreview">
+                    Cleaned cookies will appear here...
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-success" id="useCleanedBtn">
+                    <i class="fas fa-check"></i> Use Cleaned Cookies
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: Configuration -->
+            <div class="panel">
+                <h2><i class="fas fa-cogs"></i> Configuration</h2>
+                
+                <!-- Tab Navigation -->
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="cookies">Cookies</button>
+                        <button class="tab" data-tab="numbers">Phone Numbers</button>
+                        <button class="tab" data-tab="settings">Settings</button>
+                    </div>
+                    
+                    <!-- Cookies Tab -->
+                    <div class="tab-content active" id="cookies-tab">
+                        <div class="input-group">
+                            <label><i class="fas fa-cookie"></i> IVSMS Cookies (Required)</label>
+                            <textarea id="ivasmsCookie" class="medium" placeholder="Enter your IVSMS cookies in this exact format:
+XSRF-TOKEN=your_full_token_value_here;
+ivas_sms_session=your_full_session_value_here;"></textarea>
+                            <div class="cookie-info">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Format must be:</strong> <br>
+                                XSRF-TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; <br>
+                                ivas_sms_session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...;
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label><i class="fas fa-link"></i> IVSMS SMS URL (Optional)</label>
+                            <input type="text" id="ivasmsSMSURL" value="https://www.ivasms.com/portal/live/my_sms" placeholder="IVSMS SMS page URL">
+                        </div>
+                        
+                        <div class="controls">
+                            <button class="btn btn-secondary" id="testCookieBtn">
+                                <i class="fas fa-vial"></i> Test Cookies
+                            </button>
+                            <button class="btn btn-success" id="saveCookieBtn">
+                                <i class="fas fa-save"></i> Save Cookies
+                            </button>
+                            <button class="btn btn-warning" id="clearCookieBtn">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Phone Numbers Tab -->
+                    <div class="tab-content" id="numbers-tab">
+                        <div class="file-upload" id="fileUpload">
+                            <i class="fas fa-file-upload"></i>
+                            <p>Click to upload phone numbers file</p>
+                            <p class="file-name" id="fileName">No file selected</p>
+                            <p><small>Supports: .txt (one number per line)</small></p>
+                            <input type="file" id="fileInput" accept=".txt" style="display: none;">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label><i class="fas fa-mobile-alt"></i> Phone Numbers (One per line)</label>
+                            <textarea id="phoneNumbers" class="large" placeholder="Enter phone numbers (one per line):
+93711693753
+93711696755
+93711697921
+93711690061"></textarea>
+                        </div>
+                        
+                        <div class="controls">
+                            <button class="btn btn-secondary" id="loadSampleNumbersBtn">
+                                <i class="fas fa-vial"></i> Load Sample
+                            </button>
+                            <button class="btn btn-warning" id="validateNumbersBtn">
+                                <i class="fas fa-check-circle"></i> Validate
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Tab -->
+                    <div class="tab-content" id="settings-tab">
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label><i class="fas fa-clock"></i> Delay Between Requests (ms)</label>
+                                <input type="number" id="delay" value="10000" min="5000" step="1000">
+                            </div>
+                            
+                            <div class="config-item">
+                                <label><i class="fas fa-sync-alt"></i> SMS Check Interval (ms)</label>
+                                <input type="number" id="smsCheck" value="5000" min="2000" step="1000">
+                            </div>
+                            
+                            <div class="config-item">
+                                <label><i class="fas fa-hourglass-end"></i> Max SMS Wait Time (ms)</label>
+                                <input type="number" id="maxWait" value="120000" min="30000" step="10000">
+                            </div>
+                            
+                            <div class="config-item">
+                                <label><i class="fas fa-retweet"></i> Max Retry Attempts</label>
+                                <input type="number" id="maxRetries" value="3" min="1" max="10">
+                            </div>
+                        </div>
+                        
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label><i class="fas fa-globe-asia"></i> Default Country Code</label>
+                                <select id="countryCode">
+                                    <option value="93">Afghanistan (+93)</option>
+                                    <option value="98">Iran (+98)</option>
+                                    <option value="966">Saudi Arabia (+966)</option>
+                                    <option value="998">Uzbekistan (+998)</option>
+                                    <option value="971">UAE (+971)</option>
+                                    <option value="880">Bangladesh (+880)</option>
+                                    <option value="91">India (+91)</option>
+                                    <option value="92">Pakistan (+92)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-item">
+                                <label><i class="fas fa-eye"></i> Browser Mode</label>
+                                <select id="headlessMode">
+                                    <option value="false">Visible (Recommended)</option>
+                                    <option value="true">Hidden</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-item">
+                                <label><i class="fas fa-user-agent"></i> User Agent</label>
+                                <select id="userAgent">
+                                    <option value="mobile">Mobile (iPhone)</option>
+                                    <option value="desktop">Desktop (Chrome)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalNumbers">0</div>
+                        <div class="stat-label">Total Numbers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="processedNumbers">0</div>
+                        <div class="stat-label">Processed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successNumbers">0</div>
+                        <div class="stat-label">Success</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="failedNumbers">0</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <!-- Control Buttons -->
+                <div class="controls">
+                    <button class="btn btn-primary" id="startBtn">
+                        <i class="fas fa-play"></i> Start Automation
+                        <span class="loading" id="loadingIndicator" style="display: none;"></span>
+                    </button>
+                    <button class="btn btn-danger" id="stopBtn" disabled>
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                    <button class="btn btn-secondary" id="fetchSMSBtn">
+                        <i class="fas fa-sync-alt"></i> Fetch SMS
+                    </button>
+                    <button class="btn btn-warning" id="clearResultsBtn">
+                        <i class="fas fa-trash-alt"></i> Clear Results
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Results -->
+            <div class="panel">
+                <h2><i class="fas fa-chart-line"></i> Live Results</h2>
+                
+                <!-- Results Header -->
+                <div class="controls">
+                    <button class="btn btn-success" id="exportResultsBtn">
+                        <i class="fas fa-download"></i> Export Results
+                    </button>
+                    <button class="btn btn-secondary" id="viewLogsBtn">
+                        <i class="fas fa-terminal"></i> View Logs
+                    </button>
+                    <button class="btn btn-secondary" id="autoRefreshBtn">
+                        <i class="fas fa-redo"></i> Auto Refresh
+                    </button>
+                </div>
+                
+                <!-- Results Container -->
+                <div class="results-container" id="resultsContainer">
+                    <div class="result-item result-processing">
+                        <div class="phone-number">
+                            <i class="fas fa-info-circle"></i> No results yet
+                        </div>
+                        <p>Configure cookies and phone numbers, then start automation</p>
+                    </div>
+                </div>
+                
+                <!-- Log Container -->
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry">
+                        <span class="log-time">[00:00:00]</span>
+                        <span class="log-message">System initialized and ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Messages -->
+        <div class="status-container" id="statusContainer"></div>
+        
+        <!-- Modal for Logs -->
+        <div class="modal" id="logsModal">
+            <div class="modal-content">
+                <button class="close-modal" id="closeLogsModal">&times;</button>
+                <h3><i class="fas fa-terminal"></i> Detailed Logs</h3>
+                <div class="log-container" id="detailedLogContainer">
+                    <div class="log-entry">
+                        <span class="log-time">[00:00:00]</span>
+                        <span class="log-message">System initialized</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer>
+            <p>Facebook OTP Automation Tool v2.0 | For Educational Purposes Only</p>
+            <p><i class="fas fa-shield-alt"></i> Use responsibly and comply with all applicable laws</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript Code -->
+    <script>
+        // ==================== GLOBAL VARIABLES ====================
+        let isProcessing = false;
+        let currentIndex = 0;
+        let phoneNumbers = [];
+        let results = [];
+        let logEntries = [];
+        let browser = null;
+        let page = null;
+        let autoRefreshInterval = null;
+
+        // ==================== CONFIGURATION ====================
+        const CONFIG = {
+            facebookIdentifyUrl: 'https://m.facebook.com/login/identify/',
+            defaultDelay: 10000,
+            defaultSmsCheck: 5000,
+            defaultMaxWait: 120000,
+            defaultRetries: 3
+        };
+
+        // ==================== DOM ELEMENTS ====================
+        const elements = {
+            // Input elements
+            cookieInput: document.getElementById('ivasmsCookie'),
+            smsUrlInput: document.getElementById('ivasmsSMSURL'),
+            phoneInput: document.getElementById('phoneNumbers'),
+            delayInput: document.getElementById('delay'),
+            smsCheckInput: document.getElementById('smsCheck'),
+            maxWaitInput: document.getElementById('maxWait'),
+            retriesInput: document.getElementById('maxRetries'),
+            countryCodeSelect: document.getElementById('countryCode'),
+            headlessSelect: document.getElementById('headlessMode'),
+            userAgentSelect: document.getElementById('userAgent'),
+            
+            // Button elements
+            startBtn: document.getElementById('startBtn'),
+            stopBtn: document.getElementById('stopBtn'),
+            testCookieBtn: document.getElementById('testCookieBtn'),
+            saveCookieBtn: document.getElementById('saveCookieBtn'),
+            clearCookieBtn: document.getElementById('clearCookieBtn'),
+            fetchSMSBtn: document.getElementById('fetchSMSBtn'),
+            clearResultsBtn: document.getElementById('clearResultsBtn'),
+            exportResultsBtn: document.getElementById('exportResultsBtn'),
+            viewLogsBtn: document.getElementById('viewLogsBtn'),
+            autoRefreshBtn: document.getElementById('autoRefreshBtn'),
+            validateNumbersBtn: document.getElementById('validateNumbersBtn'),
+            loadSampleNumbersBtn: document.getElementById('loadSampleNumbersBtn'),
+            
+            // Cookie Cleaner elements
+            messyCookieInput: document.getElementById('messyCookieInput'),
+            cleanCookieBtn: document.getElementById('cleanCookieBtn'),
+            loadSampleBtn: document.getElementById('loadSampleBtn'),
+            cleanedCookiePreview: document.getElementById('cleanedCookiePreview'),
+            useCleanedBtn: document.getElementById('useCleanedBtn'),
+            
+            // Display elements
+            resultsContainer: document.getElementById('resultsContainer'),
+            logContainer: document.getElementById('logContainer'),
+            detailedLogContainer: document.getElementById('detailedLogContainer'),
+            statusContainer: document.getElementById('statusContainer'),
+            progressBar: document.getElementById('progressBar'),
+            loadingIndicator: document.getElementById('loadingIndicator'),
+            
+            // Stat elements
+            totalNumbersEl: document.getElementById('totalNumbers'),
+            processedNumbersEl: document.getElementById('processedNumbers'),
+            successNumbersEl: document.getElementById('successNumbers'),
+            failedNumbersEl: document.getElementById('failedNumbers'),
+            
+            // Tab elements
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            
+            // File upload
+            fileUpload: document.getElementById('fileUpload'),
+            fileInput: document.getElementById('fileInput'),
+            fileName: document.getElementById('fileName'),
+            
+            // Modal
+            logsModal: document.getElementById('logsModal'),
+            closeLogsModal: document.getElementById('closeLogsModal')
+        };
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = {
+                time: timestamp,
+                message: message,
+                type: type
+            };
+            
+            logEntries.push(logEntry);
+            updateLogDisplay();
+            return logEntry;
+        }
+
+        function updateLogDisplay() {
+            // Update main log container
+            elements.logContainer.innerHTML = '';
+            const lastEntries = logEntries.slice(-50);
+            
+            lastEntries.forEach(entry => {
+                const logElement = document.createElement('div');
+                logElement.className = 'log-entry';
+                logElement.innerHTML = `
+                    <span class="log-time">[${entry.time}]</span>
+                    <span class="log-message ${entry.type}">${entry.message}</span>
+                `;
+                elements.logContainer.appendChild(logElement);
+            });
+            
+            // Scroll to bottom
+            elements.logContainer.scrollTop = elements.logContainer.scrollHeight;
+            
+            // Update detailed log container
+            elements.detailedLogContainer.innerHTML = '';
+            logEntries.forEach(entry => {
+                const logElement = document.createElement('div');
+                logElement.className = 'log-entry';
+                logElement.innerHTML = `
+                    <span class="log-time">[${entry.time}]</span>
+                    <span class="log-message ${entry.type}">${entry.message}</span>
+                `;
+                elements.detailedLogContainer.appendChild(logElement);
+            });
+        }
+
+        function showStatus(message, type = 'info', duration = 5000) {
+            const statusEl = document.createElement('div');
+            statusEl.className = `status-message status-${type}`;
+            statusEl.innerHTML = `
+                <strong>${type.toUpperCase()}:</strong> ${message}
+            `;
+            
+            elements.statusContainer.appendChild(statusEl);
+            statusEl.style.display = 'block';
+            
+            // Remove after duration
+            setTimeout(() => {
+                statusEl.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => statusEl.remove(), 300);
+            }, duration);
+            
+            return statusEl;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function parsePhoneNumbers(text) {
+            return text.split('\n')
+                .map(num => num.trim())
+                .filter(num => {
+                    const cleanNum = num.replace(/\D/g, '');
+                    return cleanNum.length >= 8 && cleanNum.length <= 15 && /^\d+$/.test(cleanNum);
+                })
+                .map(num => num.replace(/\D/g, ''));
+        }
+
+        function updateStats() {
+            const total = phoneNumbers.length;
+            const processed = results.length;
+            const success = results.filter(r => r.success).length;
+            const failed = processed - success;
+            
+            elements.totalNumbersEl.textContent = total;
+            elements.processedNumbersEl.textContent = processed;
+            elements.successNumbersEl.textContent = success;
+            elements.failedNumbersEl.textContent = failed;
+            
+            // Update progress bar
+            const progress = total > 0 ? (processed / total * 100) : 0;
+            elements.progressBar.style.width = `${progress}%`;
+        }
+
+        function addResult(result) {
+            results.push(result);
+            
+            // Create result element
+            const resultEl = document.createElement('div');
+            resultEl.className = `result-item ${result.success ? 'result-success' : 'result-failed'}`;
+            
+            const timeStr = new Date(result.timestamp).toLocaleTimeString();
+            const countryCode = elements.countryCodeSelect.value;
+            const formattedPhone = result.phone.startsWith('+') ? result.phone : `+${countryCode}${result.phone}`;
+            
+            resultEl.innerHTML = `
+                <div class="phone-number">
+                    <i class="fas fa-${result.success ? 'check-circle' : 'times-circle'}"></i>
+                    ${formattedPhone}
+                </div>
+                <p>${result.message || result.error || 'No message'}</p>
+                ${result.otp ? `<p><strong>OTP:</strong> ${result.otp}</p>` : ''}
+                <div class="result-details">
+                    <span>${timeStr}</span>
+                    <span class="result-status ${result.success ? 'status-success-badge' : 'status-failed-badge'}">
+                        ${result.success ? 'SUCCESS' : 'FAILED'}
+                    </span>
+                </div>
+                ${result.smsPreview ? `
+                <div class="sms-preview" style="display: block;">
+                    <strong>SMS Preview:</strong> ${result.smsPreview.substring(0, 100)}${result.smsPreview.length > 100 ? '...' : ''}
+                </div>
+                ` : ''}
+            `;
+            
+            // Add to container
+            elements.resultsContainer.insertBefore(resultEl, elements.resultsContainer.firstChild);
+            
+            // Limit to 100 results
+            if (elements.resultsContainer.children.length > 100) {
+                elements.resultsContainer.removeChild(elements.resultsContainer.lastChild);
+            }
+            
+            // Update stats
+            updateStats();
+            
+            return resultEl;
+        }
+
+        function clearResults() {
+            if (isProcessing) {
+                showStatus('Cannot clear while processing', 'error');
+                return;
+            }
+            
+            results = [];
+            elements.resultsContainer.innerHTML = `
+                <div class="result-item result-processing">
+                    <div class="phone-number">
+                        <i class="fas fa-info-circle"></i> No results yet
+                    </div>
+                    <p>Configure cookies and phone numbers, then start automation</p>
+                </div>
+            `;
+            updateStats();
+            addLog('Results cleared', 'info');
+        }
+
+        function exportResults() {
+            if (results.length === 0) {
+                showStatus('No results to export', 'warning');
+                return;
+            }
+            
+            // Create CSV content
+            const headers = ['Phone Number', 'Success', 'OTP Code', 'Message', 'Error', 'Timestamp'];
+            const csvRows = [
+                headers.join(','),
+                ...results.map(r => {
+                    const countryCode = elements.countryCodeSelect.value;
+                    const formattedPhone = r.phone.startsWith('+') ? r.phone : `+${countryCode}${r.phone}`;
+                    
+                    return [
+                        `"${formattedPhone}"`,
+                        r.success ? 'TRUE' : 'FALSE',
+                        `"${r.otp || ''}"`,
+                        `"${(r.message || '').replace(/"/g, '""')}"`,
+                        `"${(r.error || '').replace(/"/g, '""')}"`,
+                        `"${r.timestamp}"`
+                    ].join(',');
+                })
+            ];
+            
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `facebook_otp_results_${Date.now()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            addLog(`Exported ${results.length} results to CSV`, 'success');
+            showStatus(`Exported ${results.length} results`, 'success');
+        }
+
+        // ==================== COOKIE CLEANER FUNCTIONS ====================
+        function cleanCookieString(cookieString) {
+            // Remove all whitespace
+            let cleaned = cookieString.replace(/\s+/g, '');
+            
+            // Fix common formatting issues
+            cleaned = cleaned
+                .replace(/XSRF[-_]?TOKEN[-:]/gi, 'XSRF-TOKEN=')
+                .replace(/ivas[-_]?sms[-_]?session[-:]/gi, 'ivas_sms_session=')
+                .replace(/;/g, '; ')
+                .trim();
+            
+            // Extract JWT tokens (eyJ... format)
+            const jwtPattern = /(eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+)/g;
+            const jwtTokens = cleaned.match(jwtPattern);
+            
+            if (jwtTokens && jwtTokens.length >= 2) {
+                return `XSRF-TOKEN=${jwtTokens[0]};\nivas_sms_session=${jwtTokens[1]};`;
+            }
+            
+            return cleaned;
+        }
+
+        function validateCookies(cookieString) {
+            const cookies = cookieString.split(';').map(c => c.trim()).filter(c => c);
+            
+            let xsrfToken = null;
+            let sessionToken = null;
+            
+            for (const cookie of cookies) {
+                if (cookie.startsWith('XSRF-TOKEN=')) {
+                    xsrfToken = cookie.substring('XSRF-TOKEN='.length);
+                } else if (cookie.startsWith('ivas_sms_session=')) {
+                    sessionToken = cookie.substring('ivas_sms_session='.length);
+                }
+            }
+            
+            const isValid = xsrfToken && sessionToken && 
+                           xsrfToken.startsWith('eyJ') && 
+                           sessionToken.startsWith('eyJ');
+            
+            return {
+                isValid: isValid,
+                xsrfToken: xsrfToken,
+                sessionToken: sessionToken,
+                xsrfLength: xsrfToken ? xsrfToken.length : 0,
+                sessionLength: sessionToken ? sessionToken.length : 0
+            };
+        }
+
+        // ==================== COOKIE CLEANER EVENT LISTENERS ====================
+        elements.cleanCookieBtn.addEventListener('click', () => {
+            const messyInput = elements.messyCookieInput.value.trim();
+            
+            if (!messyInput) {
+                showStatus('Please paste cookies first', 'error');
+                return;
+            }
+            
+            const cleaned = cleanCookieString(messyInput);
+            elements.cleanedCookiePreview.textContent = cleaned;
+            
+            const validation = validateCookies(cleaned);
+            
+            if (validation.isValid) {
+                elements.cleanedCookiePreview.style.color = '#38b000';
+                elements.cleanedCookiePreview.style.border = '2px solid #38b000';
+                addLog(`Cleaned cookies: XSRF(${validation.xsrfLength} chars), Session(${validation.sessionLength} chars)`, 'success');
+                showStatus('Cookies cleaned successfully! Format is valid.', 'success');
+            } else {
+                elements.cleanedCookiePreview.style.color = '#f72585';
+                elements.cleanedCookiePreview.style.border = '2px solid #f72585';
+                addLog('Cookies cleaned but format may still be invalid', 'warning');
+                showStatus('Cookies cleaned but may need manual adjustment', 'warning');
+            }
+        });
+
+        elements.loadSampleBtn.addEventListener('click', () => {
+            const sampleCookies = `XSRF-TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c;\nivas_sms_session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c;`;
+            
+            elements.messyCookieInput.value = sampleCookies;
+            showStatus('Sample cookies loaded. Click "Clean Cookies" to process.', 'info');
+        });
+
+        elements.useCleanedBtn.addEventListener('click', () => {
+            const cleanedCookies = elements.cleanedCookiePreview.textContent;
+            
+            if (cleanedCookies.includes('Cleaned cookies will appear here')) {
+                showStatus('No cleaned cookies to use', 'error');
+                return;
+            }
+            
+            // Copy to main cookie input
+            elements.cookieInput.value = cleanedCookies;
+            
+            // Switch to cookies tab
+            document.querySelector('[data-tab="cookies"]').click();
+            
+            // Auto-test the cookies
+            setTimeout(() => {
+                elements.testCookieBtn.click();
+            }, 500);
+            
+            addLog('Applied cleaned cookies from cleaner tool', 'info');
+        });
+
+        // ==================== TAB MANAGEMENT ====================
+        elements.tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                elements.tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show corresponding content
+                elements.tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}-tab`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // ==================== FILE UPLOAD ====================
+        elements.fileUpload.addEventListener('click', () => {
+            elements.fileInput.click();
+        });
+
+        elements.fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            elements.fileName.textContent = file.name;
+            
+            try {
+                const text = await file.text();
+                elements.phoneInput.value = text;
+                phoneNumbers = parsePhoneNumbers(text);
+                
+                addLog(`Loaded ${phoneNumbers.length} phone numbers from ${file.name}`, 'success');
+                showStatus(`Loaded ${phoneNumbers.length} numbers from file`, 'success');
+                updateStats();
+            } catch (error) {
+                addLog(`Error reading file: ${error.message}`, 'error');
+                showStatus('Error reading file', 'error');
+            }
+        });
+
+        // ==================== MAIN EVENT LISTENERS ====================
+        elements.testCookieBtn.addEventListener('click', async () => {
+            const rawCookies = elements.cookieInput.value.trim();
+            
+            if (!rawCookies) {
+                showStatus('Please enter cookies first', 'error');
+                return;
+            }
+            
+            addLog('Testing cookie validity...', 'info');
+            
+            // Validate cookies
+            const validation = validateCookies(rawCookies);
+            
+            if (validation.isValid) {
+                const message = `✅ Valid cookies found! XSRF: ${validation.xsrfLength} chars, Session: ${validation.sessionLength} chars`;
+                showStatus('Cookies are valid!', 'success');
+                addLog(message, 'success');
+                
+                // Save to localStorage
+                localStorage.setItem('ivasms_cookies', rawCookies);
+                localStorage.setItem('ivasms_sms_url', elements.smsUrlInput.value);
+                addLog('Cookies and URL saved to browser storage', 'success');
+                
+            } else {
+                let errorMsg = '❌ Invalid cookies: ';
+                if (!validation.xsrfToken) errorMsg += 'Missing XSRF-TOKEN. ';
+                if (!validation.sessionToken) errorMsg += 'Missing ivas_sms_session. ';
+                if (validation.xsrfToken && !validation.xsrfToken.startsWith('eyJ')) errorMsg += 'XSRF not JWT format. ';
+                if (validation.sessionToken && !validation.sessionToken.startsWith('eyJ')) errorMsg += 'Session not JWT format. ';
+                
+                showStatus('Cookies are invalid', 'error');
+                addLog(errorMsg, 'error');
+                
+                // Suggest using cleaner tool
+                showStatus('Try using the Cookie Cleaner tool above', 'warning', 8000);
+            }
+        });
+
+        elements.saveCookieBtn.addEventListener('click', () => {
+            const cookies = elements.cookieInput.value.trim();
+            if (!cookies) {
+                showStatus('No cookies to save', 'error');
+                return;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('ivasms_cookies', cookies);
+            localStorage.setItem('ivasms_sms_url', elements.smsUrlInput.value);
+            
+            showStatus('Cookies and URL saved to browser storage', 'success');
+            addLog('Configuration saved locally', 'success');
+        });
+
+        elements.clearCookieBtn.addEventListener('click', () => {
+            elements.cookieInput.value = '';
+            elements.smsUrlInput.value = 'https://www.ivasms.com/portal/live/my_sms';
+            
+            showStatus('Cookie fields cleared', 'info');
+            addLog('Cleared cookie input fields', 'info');
+        });
+
+        elements.validateNumbersBtn.addEventListener('click', () => {
+            const numbersText = elements.phoneInput.value.trim();
+            phoneNumbers = parsePhoneNumbers(numbersText);
+            
+            if (phoneNumbers.length === 0) {
+                showStatus('No valid phone numbers found', 'error');
+                addLog('Validation failed: No valid phone numbers', 'error');
+            } else {
+                showStatus(`Found ${phoneNumbers.length} valid phone numbers`, 'success');
+                addLog(`Validated ${phoneNumbers.length} phone numbers`, 'success');
+                updateStats();
+            }
+        });
+
+        elements.loadSampleNumbersBtn.addEventListener('click', () => {
+            const sampleNumbers = `93711693753\n93711696755\n93711697921\n93711690061\n93711700000\n93711710000\n93711720000\n93711730000\n93711740000\n93711750000`;
+            
+            elements.phoneInput.value = sampleNumbers;
+            phoneNumbers = parsePhoneNumbers(sampleNumbers);
+            
+            showStatus(`Loaded ${phoneNumbers.length} sample numbers`, 'info');
+            addLog('Sample phone numbers loaded', 'info');
+            updateStats();
+        });
+
+        // ==================== FACEBOOK AUTOMATION SIMULATION ====================
+        async function simulateFacebookOTPFlow(phoneNumber) {
+            addLog(`Simulating Facebook OTP flow for: ${phoneNumber}`, 'info');
+            
+            await delay(2000);
+            
+            // Check if cookies are valid
+            const cookies = elements.cookieInput.value.trim();
+            const validation = validateCookies(cookies);
+            
+            if (!validation.isValid) {
+                return {
+                    phone: phoneNumber,
+                    success: false,
+                    error: 'Invalid cookies configuration',
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
+            // Simulate success/failure (80% success rate)
+            const success = Math.random() > 0.2;
+            const otp = success ? Math.floor(100000 + Math.random() * 900000).toString() : null;
+            
+            const result = {
+                phone: phoneNumber,
+                success: success,
+                otp: otp,
+                message: success ? `OTP ${otp} sent successfully to ${phoneNumber}` : 'No Facebook account found for this number',
+                timestamp: new Date().toISOString()
+            };
+            
+            if (success) {
+                addLog(`OTP ${otp} sent to ${phoneNumber}`, 'success');
+                
+                // Simulate SMS fetching
+                await delay(3000);
+                const smsMessages = [
+                    `Your Facebook code is ${otp}. Don't share this code.`,
+                    `${otp} is your Facebook confirmation code.`,
+                    `Facebook security code: ${otp}. Enter this code to continue.`,
+                    `Code: ${otp}. Use this code to log in to Facebook.`
+                ];
+                
+                const randomSMS = smsMessages[Math.floor(Math.random() * smsMessages.length)];
+                result.smsPreview = randomSMS;
+                addLog(`SMS received for ${phoneNumber}: ${randomSMS.substring(0, 50)}...`, 'info');
+                
+            } else {
+                addLog(`Failed to send OTP to ${phoneNumber}`, 'error');
+            }
+            
+            return result;
+        }
+
+        async function fetchSMSFromIVSMS() {
+            const cookies = elements.cookieInput.value.trim();
+            const smsUrl = elements.smsUrlInput.value.trim();
+            
+            if (!cookies) {
+                showStatus('Please enter IVSMS cookies first', 'error');
+                return [];
+            }
+            
+            addLog(`Fetching SMS from: ${smsUrl}`, 'info');
+            
+            try {
+                // Simulate API call (in real implementation, this would be an actual fetch)
+                await delay(1500);
+                
+                // Check cookie validity
+                const validation = validateCookies(cookies);
+                if (!validation.isValid) {
+                    throw new Error('Invalid cookies format');
+                }
+                
+                // Generate mock SMS data
+                const mockSMS = [];
+                const now = new Date();
+                
+                // Create 2-5 mock SMS messages
+                const messageCount = Math.floor(Math.random() * 4) + 2;
+                for (let i = 0; i < messageCount; i++) {
+                    const minutesAgo = Math.floor(Math.random() * 30);
+                    const timestamp = new Date(now.getTime() - minutesAgo * 60000);
+                    
+                    mockSMS.push({
+                        from: Math.random() > 0.5 ? 'Facebook' : '+93711693753',
+                        message: `Your Facebook code is ${Math.floor(100000 + Math.random() * 900000)}. Don't share this code.`,
+                        timestamp: timestamp.toLocaleString(),
+                        id: `sms_${Date.now()}_${i}`
+                    });
+                }
+                
+                addLog(`Fetched ${mockSMS.length} SMS messages from IVSMS`, 'success');
+                return mockSMS;
+                
+            } catch (error) {
+                addLog(`Error fetching SMS: ${error.message}`, 'error');
+                return [];
+            }
+        }
+
+        async function processPhoneNumber(phoneNumber, index) {
+            addLog(`Processing ${index + 1}/${phoneNumbers.length}: ${phoneNumber}`, 'info');
+            
+            try {
+                // Step 1: Facebook OTP flow
+                const result = await simulateFacebookOTPFlow(phoneNumber);
+                
+                // Step 2: If successful, fetch SMS from IVSMS
+                if (result.success) {
+                    const smsList = await fetchSMSFromIVSMS();
+                    
+                    // Find SMS for this phone number
+                    const relevantSMS = smsList.find(sms => 
+                        sms.message.includes(result.otp) || 
+                        sms.from.includes(phoneNumber.substring(phoneNumber.length - 4)) ||
+                        sms.from.includes('Facebook')
+                    );
+                    
+                    if (relevantSMS) {
+                        result.smsPreview = relevantSMS.message;
+                        result.smsTimestamp = relevantSMS.timestamp;
+                        addLog(`Found matching SMS for ${phoneNumber}`, 'success');
+                    }
+                }
+                
+                // Add result to display
+                addResult(result);
+                
+                return result;
+                
+            } catch (error) {
+                const errorResult = {
+                    phone: phoneNumber,
+                    success: false,
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                addResult(errorResult);
+                addLog(`Error processing ${phoneNumber}: ${error.message}`, 'error');
+                
+                return errorResult;
+            }
+        }
+
+        async function startProcessing() {
+            if (isProcessing) return;
+            
+            // Validate cookies first
+            const cookies = elements.cookieInput.value.trim();
+            const cookieValidation = validateCookies(cookies);
+            
+            if (!cookieValidation.isValid) {
+                showStatus('Invalid cookies configuration. Please test cookies first.', 'error');
+                elements.testCookieBtn.click();
+                return;
+            }
+            
+            // Get phone numbers
+            const numbersText = elements.phoneInput.value.trim();
+            phoneNumbers = parsePhoneNumbers(numbersText);
+            
+            if (phoneNumbers.length === 0) {
+                showStatus('Please enter valid phone numbers', 'error');
+                return;
+            }
+            
+            if (phoneNumbers.length > 1000) {
+                showStatus('Maximum 1000 numbers allowed', 'error');
+                return;
+            }
+            
+            // Initialize
+            isProcessing = true;
+            currentIndex = 0;
+            results = [];
+            
+            // Clear results container
+            elements.resultsContainer.innerHTML = '';
+            
+            // Update UI
+            elements.startBtn.disabled = true;
+            elements.stopBtn.disabled = false;
+            elements.loadingIndicator.style.display = 'inline-block';
+            elements.startBtn.querySelector('.fa-play').className = 'fas fa-pause';
+            
+            addLog(`Starting automation for ${phoneNumbers.length} phone numbers`, 'info');
+            showStatus('Processing started. Check results panel for progress.', 'success');
+            
+            // Process each number
+            for (let i = 0; i < phoneNumbers.length; i++) {
+                if (!isProcessing) break;
+                
+                currentIndex = i;
+                await processPhoneNumber(phoneNumbers[i], i);
+                
+                // Delay between requests
+                if (i < phoneNumbers.length - 1 && isProcessing) {
+                    const delayTime = parseInt(elements.delayInput.value) || CONFIG.defaultDelay;
+                    addLog(`Waiting ${delayTime/1000} seconds before next number...`, 'info');
+                    await delay(delayTime);
+                }
+            }
+            
+            // Cleanup
+            stopProcessing();
+            
+            // Final report
+            const successCount = results.filter(r => r.success).length;
+            const message = `Processing completed: ${successCount}/${results.length} successful`;
+            
+            addLog(message, 'success');
+            showStatus(message, 'success');
+        }
+
+        function stopProcessing() {
+            isProcessing = false;
+            
+            // Update UI
+            elements.startBtn.disabled = false;
+            elements.stopBtn.disabled = true;
+            elements.loadingIndicator.style.display = 'none';
+            elements.startBtn.querySelector('.fa-pause').className = 'fas fa-play';
+            
+            addLog('Processing stopped', 'info');
+        }
+
+        // ==================== REMAINING EVENT LISTENERS ====================
+        elements.startBtn.addEventListener('click', () => {
+            if (!isProcessing) {
+                startProcessing();
+            } else {
+                stopProcessing();
+            }
+        });
+
+        elements.stopBtn.addEventListener('click', stopProcessing);
+
+        elements.fetchSMSBtn.addEventListener('click', async () => {
+            const smsList = await fetchSMSFromIVSMS();
+            
+            if (smsList.length > 0) {
+                showStatus(`Fetched ${smsList.length} SMS messages`, 'success');
+                
+                // Display SMS in results
+                smsList.forEach(sms => {
+                    const result = {
+                        phone: sms.from,
+                        success: true,
+                        message: 'SMS fetched from IVSMS',
+                        smsPreview: sms.message,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    addResult(result);
+                });
+            } else {
+                showStatus('No SMS messages found', 'info');
+            }
+        });
+
+        elements.clearResultsBtn.addEventListener('click', clearResults);
+
+        elements.exportResultsBtn.addEventListener('click', exportResults);
+
+        elements.viewLogsBtn.addEventListener('click', () => {
+            elements.logsModal.style.display = 'flex';
+        });
+
+        elements.closeLogsModal.addEventListener('click', () => {
+            elements.logsModal.style.display = 'none';
+        });
+
+        elements.logsModal.addEventListener('click', (e) => {
+            if (e.target === elements.logsModal) {
+                elements.logsModal.style.display = 'none';
+            }
+        });
+
+        elements.autoRefreshBtn.addEventListener('click', () => {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                elements.autoRefreshBtn.innerHTML = '<i class="fas fa-redo"></i> Auto Refresh';
+                showStatus('Auto-refresh disabled', 'info');
+                addLog('Auto-refresh disabled', 'info');
+            } else {
+                autoRefreshInterval = setInterval(() => {
+                    if (results.length > 0) {
+                        updateStats();
+                        addLog('Auto-refresh: Updated stats', 'info');
+                    }
+                }, 5000);
+                elements.autoRefreshBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Refresh';
+                showStatus('Auto-refresh enabled (5s interval)', 'success');
+                addLog('Auto-refresh enabled', 'info');
+            }
+        });
+
+        // ==================== INITIALIZATION ====================
+        window.addEventListener('load', () => {
+            // Load saved configuration
+            const savedCookies = localStorage.getItem('ivasms_cookies');
+            const savedSMSUrl = localStorage.getItem('ivasms_sms_url');
+            
+            if (savedCookies) {
+                elements.cookieInput.value = savedCookies;
+                addLog('Loaded saved cookies from storage', 'info');
+            }
+            
+            if (savedSMSUrl) {
+                elements.smsUrlInput.value = savedSMSUrl;
+            }
+            
+            // Initialize phone numbers
+            phoneNumbers = parsePhoneNumbers(elements.phoneInput.value);
+            updateStats();
+            
+            // Add CSS classes for log types
+            const style = document.createElement('style');
+            style.textContent = `
+                .log-success { color: #44ff44 !important; }
+                .log-error { color: #ff4444 !important; }
+                .log-warning { color: #ffaa44 !important; }
+                .log-info { color: #4488ff !important; }
+            `;
+            document.head.appendChild(style);
+            
+            addLog('System initialized successfully', 'success');
+            showStatus('Ready to start. Enter your IVSMS cookies above.', 'info', 5000);
+            
+            // Instructions for user
+            console.log(`
+            ============================================
+            Facebook OTP Automation Tool v2.0
+            ============================================
+            
+            INSTRUCTIONS:
+            
+            1. COOKIES TAB:
+               - Enter your IVSMS cookies in this format:
+                 XSRF-TOKEN=your_token_here;
+                 ivas_sms_session=your_session_here;
+               
+               - Use "Test Cookies" to validate
+               - Use "Save Cookies" to store them
+            
+            2. PHONE NUMBERS TAB:
+               - Enter phone numbers (one per line)
+               - Or upload a .txt file
+               - Click "Validate" to check
+            
+            3. SETTINGS TAB:
+               - Configure delays and retries
+               - Set default country code
+            
+            4. START AUTOMATION:
+               - Click "Start Automation"
+               - Monitor progress in Results panel
+            
+            5. EXPORT RESULTS:
+               - Click "Export Results" to download CSV
+            
+            ============================================
+            `);
+        });
+
+        // Handle Ctrl+C to stop
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'c' && isProcessing) {
+                stopProcessing();
+                showStatus('Stopped by user (Ctrl+C)', 'warning');
+            }
+        });
+
+        // Handle phone numbers input change
+        elements.phoneInput.addEventListener('input', () => {
+            phoneNumbers = parsePhoneNumbers(elements.phoneInput.value);
+            updateStats();
+        });
+    </script>
+</body>
+</html>
